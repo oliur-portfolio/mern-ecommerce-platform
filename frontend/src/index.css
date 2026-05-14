@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --font-roboto: "Roboto", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply font-poppins bg-gray-50 text-base font-normal text-gray-700;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-roboto text-2xl font-semibold text-black;
+  }
+
+  a {
+    @apply font-poppins;
+  }
+
+  label {
+    @apply text-base font-medium;
+  }
+
+  input {
+    @apply text-base;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .wrapper {
+    @apply w-full max-w-310 px-5 md:px-10 mx-auto;
+  }
+
+  .nav__link-item {
+    @apply relative pb-2 md:pb-4 lg:pb-0 lg:h-[77px] flex items-center w-fit;
+  }
+
+  .nav__link {
+    @apply text-base md:text-lg lg:text-base font-medium text-gray-600 hover:text-blue-600 transition-all duration-150 ease-in-out;
+  }
+
+  .nav__link--active {
+    @apply text-blue-600 after:absolute after:content-[''] after:top-[calc(100%-3px)] after:left-0 after:w-full after:h-1 after:bg-blue-600;
+  }
+
+  .custom-btn {
+    @apply w-fit h-11 px-6 bg-blue-600 hover:bg-blue-700 active:scale-[0.97] text-white text-base leading-none font-medium rounded-md transition cursor-pointer flex items-center justify-center gap-3;
+  }
+
+  .custom-btn-outline {
+    @apply w-fit h-11 px-8 border border-gray-300 text-gray-600 text-base font-medium rounded-md active:scale-[0.97] transition cursor-pointer flex items-center justify-center gap-3 hover:bg-white;
+  }
+
+  .hero-bg {
+    @apply bg-no-repeat bg-cover bg-right lg:bg-top;
+  }
+
+  .hero__feature-border {
+    @apply after:absolute after:content-[''] after:top-1/2 after:-translate-y-1/2 after:-right-8 after:w-0.5 after:h-5 after:bg-gray-400 last-of-type:after:hidden after:hidden md:after:block;
+  }
+
+  .product-thumbs .swiper-slide {
+    @apply border border-gray-200 rounded-xl overflow-hidden transition cursor-pointer;
+  }
+
+  .product-thumbs .swiper-slide-thumb-active {
+    @apply border-blue-300;
+  }
+}
+
+/* Custom CSS */
+
+.hero-bg {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    url("/images/hero.png");
+}
+
+@media (min-width: 1024px) {
+  .hero-bg {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)),
+      url("/images/hero.png");
+  }
+}
+
+/* Custom CSS */
