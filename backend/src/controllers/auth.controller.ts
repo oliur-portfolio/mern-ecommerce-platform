@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { CookieOptions, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import asyncHandler from "../utils/asyncHandler";
 import AppError from "../utils/AppError";
@@ -8,18 +8,20 @@ import {
   generateRefreshToken,
 } from "../utils/generateTokens";
 
-const cookieBaseOptions = {
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieBaseOptions: CookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
 };
 
-const refreshTokenCookieOptions = {
+const refreshTokenCookieOptions: CookieOptions = {
   ...cookieBaseOptions,
-  maxAge: 30 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000,
 };
 
-const clearCookieOptions = {
+const clearCookieOptions: CookieOptions = {
   ...cookieBaseOptions,
 };
 

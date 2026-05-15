@@ -6,7 +6,7 @@ This project is designed to demonstrate real-world frontend development skills, 
 
 ## Live Demo
 
-Live Website: https://your-frontend.vercel.app
+Live Website: https://mern-ecommerce-platform-two.vercel.app
 
 The backend API is deployed separately and connected with the frontend.
 
