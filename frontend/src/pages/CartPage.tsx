@@ -120,7 +120,7 @@ const CartPage = () => {
                               </button>
 
                               <span className="w-10 h-9 flex items-center justify-center border-x border-gray-300">
-                                {isUpdating ? "..." : item.quantity}
+                                {item.quantity}
                               </span>
 
                               <button
