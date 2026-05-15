@@ -11,9 +11,14 @@ import { FiTrash2 } from "react-icons/fi";
 interface ProductCardProps {
   product: IProduct;
   isWishListCard?: boolean;
+  isWishlistActionLoading?: boolean;
 }
 
-const ProductCard = ({ product, isWishListCard }: ProductCardProps) => {
+const ProductCard = ({
+  product,
+  isWishListCard,
+  isWishlistActionLoading = false,
+}: ProductCardProps) => {
   const { user } = useAuth();
   const { addToCart, addingCartProductId } = useCart();
   const { toggleWishlist, isInWishlist, removeFromWishlist } = useWishlist();
@@ -87,7 +92,8 @@ const ProductCard = ({ product, isWishListCard }: ProductCardProps) => {
               <button
                 type="button"
                 onClick={() => removeFromWishlist(product._id)}
-                className="w-11 h-11 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition"
+                disabled={isWishlistActionLoading}
+                className="w-11 h-11 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition disabled:opacity-50"
               >
                 <FiTrash2 className="w-4.5 h-4.5 text-red-500" />
               </button>

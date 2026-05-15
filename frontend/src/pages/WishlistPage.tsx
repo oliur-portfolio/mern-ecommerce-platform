@@ -14,6 +14,9 @@ const WishlistPage = () => {
     isWishlistLoading,
     isWishlistError,
     wishlistError,
+    removingWishlistProductId,
+    togglingWishlistProductId,
+    isClearingWishlist,
   } = useWishlist();
 
   return (
@@ -56,20 +59,28 @@ const WishlistPage = () => {
               <button
                 type="button"
                 onClick={clearWishlist}
-                className="text-red-500 font-medium hover:text-red-600 w-fit"
+                disabled={isClearingWishlist}
+                className="text-red-500 font-medium hover:text-red-600 w-fit disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Clear Wishlist
+                {isClearingWishlist ? "Clearing..." : "Clear Wishlist"}
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {wishlistItems.map((product: IProduct) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  isWishListCard
-                />
-              ))}
+              {wishlistItems.map((product: IProduct) => {
+                const isWishlistActionLoading =
+                  removingWishlistProductId === product._id ||
+                  togglingWishlistProductId === product._id;
+
+                return (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    isWishListCard
+                    isWishlistActionLoading={isWishlistActionLoading}
+                  />
+                );
+              })}
             </div>
           </>
         )}

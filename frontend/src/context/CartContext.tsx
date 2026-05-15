@@ -26,11 +26,18 @@ interface ICartContext {
   isCartLoading: boolean;
   isCartError: boolean;
   cartError: Error | null;
+
   addToCart: (product: IProduct) => void;
   addingCartProductId: string | null;
+
   removeFromCart: (productId: string) => void;
   increaseQuantity: (productId: string) => void;
   decreaseQuantity: (productId: string) => void;
+
+  updatingCartProductId: string | null;
+  removingCartProductId: string | null;
+  isClearingCart: boolean;
+
   clearCart: () => void;
   clearCartOnLogout: () => void;
 }
@@ -62,9 +69,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const [isGuestCartReady, setIsGuestCartReady] = useState(false);
   const [cartItems, setCartItems] = useState<ICartItem[]>(getLocalCart);
+
   const [addingCartProductId, setAddingCartProductId] = useState<string | null>(
     null,
   );
+
+  const [updatingCartProductId, setUpdatingCartProductId] = useState<
+    string | null
+  >(null);
+
+  const [removingCartProductId, setRemovingCartProductId] = useState<
+    string | null
+  >(null);
 
   const isAdmin = user?.role === "admin";
 
@@ -93,12 +109,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setCartItems(formatBackendCart(data.cart));
       toast.success(data.message || "Product added to cart");
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to add product to cart");
+    },
   });
 
   const updateQuantityMutation = useMutation({
     mutationFn: updateCartItemQuantity,
     onSuccess: (data) => {
       setCartItems(formatBackendCart(data.cart));
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to update cart");
     },
   });
 
@@ -108,6 +130,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setCartItems(formatBackendCart(data.cart));
       toast.success(data.message || "Product removed from cart");
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to remove product");
+    },
   });
 
   const clearCartMutation = useMutation({
@@ -116,6 +141,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setCartItems([]);
       localStorage.removeItem(CART_KEY);
       toast.success("Cart cleared");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to clear cart");
     },
   });
 
@@ -136,7 +164,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     if (isAdmin) {
       localStorage.removeItem(CART_KEY);
-
       setCartItems([]);
       return;
     }
@@ -167,6 +194,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       toast.error("Admin cannot add products to cart");
       return;
     }
+
+    if (addingCartProductId === product._id) return;
 
     setAddingCartProductId(product._id);
 
@@ -204,48 +233,72 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const removeFromCart = (productId: string) => {
-    if (isAuthenticated) {
-      removeCartMutation.mutate(productId);
+  const removeFromCart = async (productId: string) => {
+    if (removingCartProductId === productId) return;
+    if (updatingCartProductId === productId) return;
+
+    if (!isAuthenticated) {
+      setCartItems((prev) =>
+        prev.filter((item) => item.product._id !== productId),
+      );
+
+      toast.success("Product removed from cart");
       return;
     }
 
-    setCartItems((prev) =>
-      prev.filter((item) => item.product._id !== productId),
-    );
+    setRemovingCartProductId(productId);
 
-    toast.success("Product removed from cart");
+    try {
+      await removeCartMutation.mutateAsync(productId);
+    } finally {
+      setRemovingCartProductId(null);
+    }
   };
 
-  const increaseQuantity = (productId: string) => {
+  const increaseQuantity = async (productId: string) => {
+    if (updatingCartProductId === productId) return;
+    if (removingCartProductId === productId) return;
+
     const currentItem = cartItems.find(
       (item) => item.product._id === productId,
     );
+
     if (!currentItem) return;
 
     const newQuantity = currentItem.quantity + 1;
 
-    if (isAuthenticated) {
-      updateQuantityMutation.mutate({
-        productId,
-        quantity: newQuantity,
-      });
+    if (!isAuthenticated) {
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.product._id === productId
+            ? { ...item, quantity: newQuantity }
+            : item,
+        ),
+      );
+
       return;
     }
 
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product._id === productId
-          ? { ...item, quantity: newQuantity }
-          : item,
-      ),
-    );
+    setUpdatingCartProductId(productId);
+
+    try {
+      await updateQuantityMutation.mutateAsync({
+        productId,
+        quantity: newQuantity,
+      });
+    } finally {
+      setUpdatingCartProductId(null);
+    }
   };
 
-  const decreaseQuantity = (productId: string) => {
+  const decreaseQuantity = async (productId: string) => {
+    if (updatingCartProductId === productId) return;
+    if (removingCartProductId === productId) return;
+
     const currentItem = cartItems.find(
       (item) => item.product._id === productId,
     );
+
     if (!currentItem) return;
 
     const newQuantity = currentItem.quantity - 1;
@@ -255,24 +308,33 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    if (isAuthenticated) {
-      updateQuantityMutation.mutate({
-        productId,
-        quantity: newQuantity,
-      });
+    if (!isAuthenticated) {
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.product._id === productId
+            ? { ...item, quantity: newQuantity }
+            : item,
+        ),
+      );
+
       return;
     }
 
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product._id === productId
-          ? { ...item, quantity: newQuantity }
-          : item,
-      ),
-    );
+    setUpdatingCartProductId(productId);
+
+    try {
+      await updateQuantityMutation.mutateAsync({
+        productId,
+        quantity: newQuantity,
+      });
+    } finally {
+      setUpdatingCartProductId(null);
+    }
   };
 
   const clearCart = () => {
+    if (clearCartMutation.isPending) return;
+
     if (isAuthenticated) {
       clearCartMutation.mutate();
       return;
@@ -304,11 +366,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isCartLoading,
         isCartError,
         cartError,
+
         addToCart,
         addingCartProductId,
+
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+
+        updatingCartProductId,
+        removingCartProductId,
+        isClearingCart: clearCartMutation.isPending,
+
         clearCart,
         clearCartOnLogout,
       }}

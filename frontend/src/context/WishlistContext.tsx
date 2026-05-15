@@ -23,11 +23,16 @@ interface IWishlistContext {
   isWishlistLoading: boolean;
   isWishlistError: boolean;
   wishlistError: Error | null;
+
   isInWishlist: (productId: string) => boolean;
   toggleWishlist: (product: IProduct) => void;
   removeFromWishlist: (productId: string) => void;
   clearWishlist: () => void;
   clearWishlistStateOnly: () => void;
+
+  togglingWishlistProductId: string | null;
+  removingWishlistProductId: string | null;
+  isClearingWishlist: boolean;
 }
 
 const WishlistContext = createContext<IWishlistContext | null>(null);
@@ -52,7 +57,16 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
 
   const [wishlistItems, setWishlistItems] =
     useState<IProduct[]>(getLocalWishlist);
+
   const [isGuestWishlistReady, setIsGuestWishlistReady] = useState(false);
+
+  const [togglingWishlistProductId, setTogglingWishlistProductId] = useState<
+    string | null
+  >(null);
+
+  const [removingWishlistProductId, setRemovingWishlistProductId] = useState<
+    string | null
+  >(null);
 
   const isAdmin = user?.role === "admin";
 
@@ -73,6 +87,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       setWishlistItems(formatBackendWishlist(data.wishlist));
       localStorage.removeItem(WISHLIST_KEY);
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to merge wishlist");
+    },
   });
 
   const toggleWishlistMutation = useMutation({
@@ -80,6 +97,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     onSuccess: (data) => {
       setWishlistItems(formatBackendWishlist(data.wishlist));
       toast.success(data.message);
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to update wishlist");
     },
   });
 
@@ -89,6 +109,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       setWishlistItems(formatBackendWishlist(data.wishlist));
       toast.success(data.message || "Product removed from wishlist");
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to remove product");
+    },
   });
 
   const clearWishlistMutation = useMutation({
@@ -97,6 +120,9 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       setWishlistItems([]);
       localStorage.removeItem(WISHLIST_KEY);
       toast.success("Wishlist cleared");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to clear wishlist");
     },
   });
 
@@ -118,7 +144,6 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     if (isAdmin) {
       localStorage.removeItem(WISHLIST_KEY);
       setWishlistItems([]);
-
       return;
     }
 
@@ -144,14 +169,24 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     return wishlistItems.some((product) => product._id === productId);
   };
 
-  const toggleWishlist = (product: IProduct) => {
+  const toggleWishlist = async (product: IProduct) => {
     if (isAdmin) {
       toast.error("Admin cannot add products to wishlist");
       return;
     }
 
+    if (togglingWishlistProductId === product._id) return;
+    if (removingWishlistProductId === product._id) return;
+
     if (isAuthenticated) {
-      toggleWishlistMutation.mutate(product._id);
+      setTogglingWishlistProductId(product._id);
+
+      try {
+        await toggleWishlistMutation.mutateAsync(product._id);
+      } finally {
+        setTogglingWishlistProductId(null);
+      }
+
       return;
     }
 
@@ -168,9 +203,19 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const removeFromWishlist = (productId: string) => {
+  const removeFromWishlist = async (productId: string) => {
+    if (removingWishlistProductId === productId) return;
+    if (togglingWishlistProductId === productId) return;
+
     if (isAuthenticated) {
-      removeWishlistMutation.mutate(productId);
+      setRemovingWishlistProductId(productId);
+
+      try {
+        await removeWishlistMutation.mutateAsync(productId);
+      } finally {
+        setRemovingWishlistProductId(null);
+      }
+
       return;
     }
 
@@ -180,6 +225,8 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const clearWishlist = () => {
+    if (clearWishlistMutation.isPending) return;
+
     if (isAuthenticated) {
       clearWishlistMutation.mutate();
       return;
@@ -203,11 +250,16 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         isWishlistLoading,
         isWishlistError,
         wishlistError,
+
         isInWishlist,
         toggleWishlist,
         removeFromWishlist,
         clearWishlist,
         clearWishlistStateOnly,
+
+        togglingWishlistProductId,
+        removingWishlistProductId,
+        isClearingWishlist: clearWishlistMutation.isPending,
       }}
     >
       {children}

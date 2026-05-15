@@ -17,6 +17,8 @@ const CartPage = () => {
     cartItems,
     cartCount,
     subtotal,
+    updatingCartProductId,
+    removingCartProductId,
     removeFromCart,
     increaseQuantity,
     decreaseQuantity,
@@ -67,74 +69,85 @@ const CartPage = () => {
             <div className="flex flex-col lg:flex-row lg:items-start gap-6">
               <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden flex-1">
                 {cartItems &&
-                  cartItems.map((item) => (
-                    <div
-                      key={item.product?._id}
-                      className="p-5 border-b border-gray-200 last:border-b-0 flex gap-4"
-                    >
-                      <img
-                        src={
-                          item.product?.images?.[0]?.url ||
-                          "/images/placeholder.jpg"
-                        }
-                        alt={item.product?.title}
-                        loading="lazy"
-                        className="w-16 h-16 md:w-24 md:h-24 p-1 rounded-lg md:rounded-xl object-cover border border-gray-200"
-                      />
+                  cartItems.map((item) => {
+                    const isUpdating =
+                      updatingCartProductId === item.product._id;
+                    const isRemoving =
+                      removingCartProductId === item.product._id;
+                    const isItemBusy = isUpdating || isRemoving;
 
-                      <div className="flex-1">
-                        <Link to={`/products/${item.product?._id}`}>
-                          <h2 className="text-lg md:text-xl font-medium text-gray-900 hover:text-blue-600 transition">
-                            {item.product?.title}
-                          </h2>
-                        </Link>
+                    return (
+                      <div
+                        key={item.product?._id}
+                        className="p-5 border-b border-gray-200 last:border-b-0 flex gap-4"
+                      >
+                        <img
+                          src={
+                            item.product?.images?.[0]?.url ||
+                            "/images/placeholder.jpg"
+                          }
+                          alt={item.product?.title}
+                          loading="lazy"
+                          className="w-16 h-16 md:w-24 md:h-24 p-1 rounded-lg md:rounded-xl object-cover border border-gray-200"
+                        />
 
-                        <p className="text-sm text-gray-500 capitalize mt-1">
-                          {item.product?.category}
-                        </p>
+                        <div className="flex-1">
+                          <Link to={`/products/${item.product?._id}`}>
+                            <h2 className="text-lg md:text-xl font-medium text-gray-900 hover:text-blue-600 transition">
+                              {item.product?.title}
+                            </h2>
+                          </Link>
 
-                        <p className="text-lg font-semibold text-gray-900 mt-2">
-                          ${item.product?.price}
-                        </p>
+                          <p className="text-sm text-gray-500 capitalize mt-1">
+                            {item.product?.category}
+                          </p>
 
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                          <p className="text-lg font-semibold text-gray-900 mt-2">
+                            ${item.product?.price}
+                          </p>
+
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  decreaseQuantity(item.product._id)
+                                }
+                                disabled={isItemBusy}
+                                className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <FiMinus />
+                              </button>
+
+                              <span className="w-10 h-9 flex items-center justify-center border-x border-gray-300">
+                                {isUpdating ? "..." : item.quantity}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  increaseQuantity(item.product._id)
+                                }
+                                disabled={isItemBusy}
+                                className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <FiPlus />
+                              </button>
+                            </div>
+
                             <button
                               type="button"
-                              onClick={() =>
-                                decreaseQuantity(item.product?._id)
-                              }
-                              className="w-9 h-9 flex items-center justify-center hover:bg-gray-100"
+                              onClick={() => removeFromCart(item.product._id)}
+                              disabled={isItemBusy}
+                              className="text-red-500 hover:text-red-600 disabled:opacity-50"
                             >
-                              <FiMinus />
-                            </button>
-
-                            <span className="w-10 h-9 flex items-center justify-center border-x border-gray-300">
-                              {item.quantity}
-                            </span>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                increaseQuantity(item.product?._id)
-                              }
-                              className="w-9 h-9 flex items-center justify-center hover:bg-gray-100"
-                            >
-                              <FiPlus />
+                              <FiTrash2 className="w-5 h-5" />
                             </button>
                           </div>
-
-                          <button
-                            type="button"
-                            onClick={() => removeFromCart(item.product?._id)}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            <FiTrash2 className="w-5 h-5" />
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
 
               <div className="bg-white border border-gray-200 rounded-2xl p-5 w-full max-w-87.5 ">
