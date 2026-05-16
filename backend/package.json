@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "stripe:webhook": "stripe listen --forward-to localhost:4000/api/stripe/webhook",
+    "stripe:webhook": "stripe listen --forward-to localhost:2000/api/stripe/webhook",
     "build": "tsc",
     "start": "node dist/index.js"
   },
