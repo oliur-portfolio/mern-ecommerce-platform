@@ -40,6 +40,14 @@ The main goal of this project is to build a clean, simple, and production-like e
 
 ## Key Features
 
+### Authentication & Security
+
+- JWT authentication with access and refresh token flow
+- Secure HTTP-only cookie based refresh token handling
+- Persistent user sessions with automatic token refresh
+- Protected routes for users and admins
+- Role-based access control
+
 ### User Features
 
 - User registration and login
@@ -59,7 +67,7 @@ The main goal of this project is to build a clean, simple, and production-like e
 
 - Admin protected routes
 - Product CRUD
-- Multiple product image upload with Cloudinary
+- Optimized parallel image uploads with real-time preview updates
 - Product list with pagination
 - Manage orders
 - Dashboard stats
@@ -84,13 +92,15 @@ The main goal of this project is to build a clean, simple, and production-like e
 
 - React
 - TypeScript
-- React Router
-- TanStack React Query
 - Tailwind CSS
+- TanStack React Query
+- Context API
+- React Router
 - React Hook Form
 - Zod
 - Axios
 - React Hot Toast
+- Swiper.js
 
 ### Backend
 

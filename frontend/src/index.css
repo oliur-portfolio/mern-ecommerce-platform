@@ -44,7 +44,7 @@
   }
 
   .nav__link-item {
-    @apply relative pb-2 md:pb-4 lg:pb-0 lg:h-[77px] flex items-center w-fit;
+    @apply relative pb-2 md:pb-3 lg:pb-0 lg:h-19.25 flex items-center w-fit;
   }
 
   .nav__link {

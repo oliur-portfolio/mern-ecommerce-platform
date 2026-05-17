@@ -67,7 +67,7 @@ const Navbar = ({ isMenuOpen, onToggleMenu }: NavbarProps) => {
 
   return (
     <header
-      className={`min-h-17 md:min-h-19.25 flex lg:items-center bg-white border-b border-gray-200 fixed w-full top-0 left-0 z-40 ${isMobileMenu ? "h-screen" : "h-auto"}`}
+      className={`min-h-17 md:min-h-19.25 flex lg:items-center bg-white border-b border-gray-200 fixed w-full top-0 left-0 z-40 ${isMobileMenu ? "h-screen lg:h-auto" : "h-auto"}`}
     >
       <div className="wrapper">
         <nav className="flex flex-col lg:flex-row items-center lg:justify-between relative">
@@ -110,7 +110,7 @@ const Navbar = ({ isMenuOpen, onToggleMenu }: NavbarProps) => {
           {/* Nav Links */}
           {user?.role !== "admin" && (
             <ul
-              className={`lg:flex flex-col lg:flex-row items-center gap-8 md:gap-10 w-fit mt-30 lg:mt-0 ${isMobileMenu ? "flex" : "hidden"}`}
+              className={`lg:flex flex-col lg:flex-row items-center gap-6 lg:gap-10 w-fit mt-30 lg:mt-0 ${isMobileMenu ? "flex" : "hidden"}`}
             >
               {navLinks.map((link) => (
                 <li key={link.href} className="nav__link-item">
